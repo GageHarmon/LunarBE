@@ -16,6 +16,8 @@ requests = "*"
 python-dotenv = "*"
 faker = "*"
 sqlalchemy-serializer = "*"
+psycopg2 = "*"
+openai = "*"
 
 [dev-packages]
 

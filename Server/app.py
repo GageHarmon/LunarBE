@@ -2,7 +2,7 @@ from flask import request, jsonify, session, make_response
 from flask_restful import Api, Resource
 from flask_migrate import Migrate
 from flask_cors import CORS
-from models import User, Ticket
+from models import User, Ticket, TicketComment
 from services import app, db, bcrypt
 
 # import openai
@@ -20,19 +20,22 @@ db.init_app(app)
 api = Api(app)
 CORS(app)
 
-# openai.my_api_key = os.environ.get("OPENAI_API_KEY")
+# openai.api_key = os.environ.get("OPENAI_API_KEY")
 app.secret_key = os.environ.get("secretkey")
 
 
 # ++++ CHATGPT +++++
 # class ChatGPT(Resource):
+#     def get(self):
+#         print("GET request received")
+    
 #     def post(self):
 #         data = request.get_json()
 #         message = data['message']
 #         user = data['user']
 
 #         try:
-#             response = openai.createChatCompletion(
+#             response = openai.ChatCompletion.create(
 #                 engine="gpt-3.5-turbo",
 #                 messages=[
 #                     {"role": "system", "content": "You are a helpful assistant."},
@@ -43,7 +46,7 @@ app.secret_key = os.environ.get("secretkey")
 #                 stop=None,
 #                 temperature=0.5,
 #             )
-
+#             print(response)
 #             return jsonify({"response": response.data.choices[0].message})
 
 #         except Exception as e:
@@ -69,7 +72,7 @@ class AllUsers(Resource):
         password = data['password']
         first_name = data.get('first_name')
         last_name = data.get('last_name')
-        role = data.get('role', 'User')
+        is_admin = data.get('is_admin')
 
         user_exists = User.query.filter(
             (User.username == username) | (User.email == email)
@@ -85,7 +88,7 @@ class AllUsers(Resource):
                         password=hashed_password,
                         first_name=first_name,
                         last_name=last_name,
-                        role=role)
+                        is_admin=is_admin)
 
         db.session.add(new_user)
         db.session.commit()
@@ -95,6 +98,8 @@ class AllUsers(Resource):
 
 api.add_resource(AllUsers, '/api/users')
 
+
+
 # ++++ UPDATE SPECIFIC USER ++++ 
 class UsersById(Resource):
     def get(self, id):
@@ -103,7 +108,7 @@ class UsersById(Resource):
 
         return response
 
-    def put(self, id):
+    def patch(self, id):
         user = User.query.get_or_404(id)
         data = request.get_json()
 
@@ -112,7 +117,6 @@ class UsersById(Resource):
         user.password = data.get('password', user.password)
         user.first_name = data.get('first_name', user.first_name)
         user.last_name = data.get('last_name', user.last_name)
-        user.role = data.get('role', user.role)
 
         db.session.commit()
 
@@ -129,6 +133,8 @@ class UsersById(Resource):
         return response
 
 api.add_resource(UsersById, '/api/users/<int:id>')
+
+
 
 
 # ++++ GET/ADD TICKETSlist(append.all) +++++
@@ -158,20 +164,34 @@ class AllTickets(Resource):
 
 api.add_resource(AllTickets, '/api/tickets')
 
+
+
 # ++++ UPDATE SPECIFIC TICKET(id)++++ 
+
 class TicketsById(Resource):
     def get(self, ticket_id):
         ticket = Ticket.query.get_or_404(ticket_id)
+        ticket_dict = ticket.to_dict()  # ticket_dict is defined here
+        
+        # Get the associated comments
+        comments = TicketComment.query.filter(TicketComment.ticket_id == ticket_id).all()
+        comments_list = [comment.to_dict() for comment in comments]
+
+        # Add comments to the ticket dictionary
+        ticket_dict['comments'] = comments_list
+        
         response = make_response(jsonify(ticket.to_dict()), 200)
         return response
 
-    def put(self, ticket_id):
+    def patch(self, ticket_id):
         ticket = Ticket.query.get_or_404(ticket_id)
         data = request.get_json()
 
         ticket.title = data.get('title', ticket.title)
-        ticket.description = data.get('description', ticket.description)
         ticket.status = data.get('status', ticket.status)
+        ticket.priority = data.get('priority', ticket.priority)
+        ticket.category = data.get('category', ticket.category)
+        ticket.description = data.get('description', ticket.description)
         ticket.user_id = data.get('user_id', ticket.user_id)
 
         db.session.commit()
@@ -189,8 +209,59 @@ class TicketsById(Resource):
 api.add_resource(TicketsById, '/api/tickets/<int:ticket_id>')
 
 
+        # +++++++++ COMMENTS ++++++++
 
-# ++++ LOGIN STUFF ++++
+class AllComments(Resource):
+    def get (self):
+        comments = TicketComment.query.all()
+        comments_list = [comment.to_dict() for comment in comments]
+        response = make_response(jsonify(comments_list), 200)
+
+        return response
+
+    def post(self):
+        data = request.get_json()
+        print("Received data:", data)
+        comment = TicketComment(user_id=data['user_id'], 
+                                ticket_id=data['ticket_id'], 
+                                comment=data['comment'])
+
+        db.session.add(comment)
+        db.session.commit()
+
+        response = make_response(jsonify(comment.to_dict()), 201)
+        return response
+
+api.add_resource(AllComments, '/api/ticket_comments')
+
+class CommentsById(Resource):
+    def get(self, id):
+        comment = TicketComment.query.get_or_404(id)
+        response = make_response(jsonify(comment.to_dict()), 200)
+        return response
+    
+    def patch(self, id):
+        comment = TicketComment.query.get_or_404(id)
+        data = request.get_json()
+        
+        comment.comment = data.get('comment', comment.comment)
+        
+        db.session.commit()
+        
+        response = make_response(jsonify(comment.to_dict()), 200)
+        return response
+    
+    def delete(self, id):
+        comment = TicketComment.query.get_or_404(id)
+        db.session.delete(comment)
+        db.session.commit()
+        response = make_response(jsonify({"message": "Comment deleted successfully"}), 200)
+        return response
+
+api.add_resource(CommentsById, '/api/ticket_comments/<int:id>')
+
+
+        # +++++++++ LOGIN STUFF ++++++++
 class Login(Resource):
     def post(self):
         try:

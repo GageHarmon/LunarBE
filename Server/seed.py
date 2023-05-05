@@ -6,7 +6,7 @@ from app import app, db
 fake = Faker()
 
 # Change these values according to how many records you want to seed
-num_tickets = 30
+num_tickets = 15
 
 
 with app.app_context():
@@ -31,7 +31,7 @@ with app.app_context():
     tickets = []
     for i in range(num_tickets):
         
-            # user_id=fake.random_element(users).id
+            user_id= "1"
         #     tech_user_id=fake.random_element(users).id
             title=fake.sentence()
             description=fake.paragraph()

@@ -7,7 +7,7 @@ from services import db, bcrypt
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
     
-    serialize_only = ('id', 'username', 'email')
+    serialize_only = ('id', 'username', 'email', 'first_name', 'last_name')
     
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String, unique=True, nullable=False)
@@ -15,7 +15,7 @@ class User(db.Model, SerializerMixin):
     password = db.Column(db.String, nullable=False)
     first_name = db.Column(db.String)
     last_name = db.Column(db.String)
-    role = db.Column(db.String)
+    # is_admin = db.Column(db.Boolean)
     
     serialize_rules = ('-ticket.users', '-ticket_comment.users')
     
@@ -54,13 +54,13 @@ class Ticket(db.Model, SerializerMixin):
 class TicketComment(db.Model, SerializerMixin):
     __tablename__ = 'ticket_comments'
     
-    serialize_only = ('id', 'ticket_id', 'user_id', 'comment', 'is_ai_generated', 'created_at')
+    serialize_only = ('id', 'ticket_id', 'user_id', 'comment', 'created_at')
     
     id = db.Column(db.Integer, primary_key=True)
-    ticket_id = db.Column(db.Integer, db.ForeignKey('tickets.id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    ticket_id = db.Column(db.Integer, db.ForeignKey('tickets.id'), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     comment = db.Column(db.Text, nullable=False)
-    is_ai_generated = db.Column(db.Boolean, nullable=False)
+    # is_ai_generated = db.Column(db.Boolean, nullable=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
     ticket = db.relationship('Ticket', backref=db.backref('ticket_comments'))
