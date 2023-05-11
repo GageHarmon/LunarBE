@@ -7,6 +7,8 @@ fake = Faker()
 
 # Change these values according to how many records you want to seed
 num_tickets = 15
+num_users = 5
+
 
 
 with app.app_context():
@@ -20,7 +22,6 @@ with app.app_context():
     #         password="test",
     #         first_name=fake.first_name()
     #         last_name=fake.last_name()
-    #         role=fake.random_element(["Admin", "User"])
     #         users.append(user)
             
     # db.session.add_all(users)
