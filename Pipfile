@@ -18,6 +18,8 @@ faker = "*"
 sqlalchemy-serializer = "*"
 psycopg2 = "*"
 openai = "*"
+gunicorn = "*"
+psycopg2-binary = "*"
 
 [dev-packages]
 

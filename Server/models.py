@@ -7,7 +7,7 @@ from services import db, bcrypt
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
     
-    serialize_only = ('id', 'username', 'email', 'first_name', 'last_name')
+    serialize_only = ('id', 'username', 'email', 'first_name', 'last_name', 'is_admin')
     
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String, unique=True, nullable=False)
@@ -15,7 +15,7 @@ class User(db.Model, SerializerMixin):
     password = db.Column(db.String, nullable=False)
     first_name = db.Column(db.String)
     last_name = db.Column(db.String)
-    # is_admin = db.Column(db.Boolean)
+    is_admin = db.Column(db.Boolean, default=False)
     
     serialize_rules = ('-ticket.users', '-ticket_comment.users')
     
@@ -30,6 +30,7 @@ class User(db.Model, SerializerMixin):
             self._password_hash = password_hash.decode('utf-8')
         else:
             raise ValueError("Password cannot be None")
+        
     def authenticate(self,password):
         return bcrypt.check_password_hash(self._password_hash,password.encode('utf-8'))
 
@@ -60,7 +61,6 @@ class TicketComment(db.Model, SerializerMixin):
     ticket_id = db.Column(db.Integer, db.ForeignKey('tickets.id'), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     comment = db.Column(db.Text, nullable=False)
-    # is_ai_generated = db.Column(db.Boolean, nullable=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
     ticket = db.relationship('Ticket', backref=db.backref('ticket_comments'))

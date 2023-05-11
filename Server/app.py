@@ -20,40 +20,7 @@ db.init_app(app)
 api = Api(app)
 CORS(app)
 
-# openai.api_key = os.environ.get("OPENAI_API_KEY")
 app.secret_key = os.environ.get("secretkey")
-
-
-# ++++ CHATGPT +++++
-# class ChatGPT(Resource):
-#     def get(self):
-#         print("GET request received")
-    
-#     def post(self):
-#         data = request.get_json()
-#         message = data['message']
-#         user = data['user']
-
-#         try:
-#             response = openai.ChatCompletion.create(
-#                 engine="gpt-3.5-turbo",
-#                 messages=[
-#                     {"role": "system", "content": "You are a helpful assistant."},
-#                     {"role": "user", "content": message},
-#                 ],
-#                 max_tokens=150,
-#                 n=1,
-#                 stop=None,
-#                 temperature=0.5,
-#             )
-#             print(response)
-#             return jsonify({"response": response.data.choices[0].message})
-
-#         except Exception as e:
-#             print(f"Error: {e}")
-#             return jsonify(error="An error occurred while processing the request."), 500
-
-# api.add_resource(ChatGPT, '/api/chatgpt')
 
 
 # ++++ GET&ADD to USERS(all) +++++
@@ -285,6 +252,7 @@ class get_logged_user(Resource):
         user_id = session.get('user_id')
         if user_id:
             user = User.query.filter(User.id == session["user_id"]).first()
+            print(user.is_admin)
             res = make_response(jsonify(user.to_dict()), 200)
             return res
 

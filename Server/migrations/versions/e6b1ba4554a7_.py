@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 1553eff9bb24
+Revision ID: e6b1ba4554a7
 Revises: 
-Create Date: 2023-05-02 12:18:26.976653
+Create Date: 2023-05-09 13:26:28.044301
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '1553eff9bb24'
+revision = 'e6b1ba4554a7'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -25,7 +25,8 @@ def upgrade():
     sa.Column('password', sa.String(), nullable=False),
     sa.Column('first_name', sa.String(), nullable=True),
     sa.Column('last_name', sa.String(), nullable=True),
-    sa.Column('role', sa.String(), nullable=True),
+    sa.Column('profile_picture', sa.String(), nullable=True),
+    sa.Column('is_admin', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_users')),
     sa.UniqueConstraint('email', name=op.f('uq_users_email')),
     sa.UniqueConstraint('username', name=op.f('uq_users_username'))
@@ -44,10 +45,9 @@ def upgrade():
     )
     op.create_table('ticket_comments',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('ticket_id', sa.Integer(), nullable=False),
-    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('ticket_id', sa.Integer(), nullable=True),
+    sa.Column('user_id', sa.Integer(), nullable=True),
     sa.Column('comment', sa.Text(), nullable=False),
-    sa.Column('is_ai_generated', sa.Boolean(), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=True),
     sa.ForeignKeyConstraint(['ticket_id'], ['tickets.id'], name=op.f('fk_ticket_comments_ticket_id_tickets')),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], name=op.f('fk_ticket_comments_user_id_users')),
