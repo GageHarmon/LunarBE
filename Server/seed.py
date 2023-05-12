@@ -7,7 +7,6 @@ fake = Faker()
 
 # Change these values according to how many records you want to seed
 num_tickets = 15
-num_users = 5
 
 
 

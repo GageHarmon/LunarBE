@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 load_dotenv()
 # Use os.environ.get() to get the data
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URI")
+app.config['SQLALCHEMY_DATABASE_URI'] = 'os.environ.get("DATABASE_URI")'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 migrate = Migrate(app, db)
